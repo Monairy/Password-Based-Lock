@@ -1,3 +1,3 @@
 # Safe-Lock-Microcontroller-Project
 
-contributers, please commit politely
+contributors, please commit politely
