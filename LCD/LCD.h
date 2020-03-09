@@ -21,5 +21,10 @@
 #define LCD_CTRL_PCTL GPIO_PORTD_PCTL_R
 
 
+void init(void);
+void LCD_cmd(char cmd);
+void LCD_char(char data);
+void LCD_displayString(const char *Str);
+
 
 #endif
