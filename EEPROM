@@ -1,0 +1,24 @@
+#include "EEPROM.h"
+
+void SystemInit(){}
+	
+void EEPROM_init(void)
+{
+	uint8_t x=0;
+	SYSCTL_RCGCEEPROM_R |= 0x01;
+	x=x+1;
+	while(EEPROM_EEDONE_R &= 0x01 ==1)
+	{}
+	SYSCTL_SREEPROM_R |=0x01;
+	x=x+1;
+	while(EEPROM_EEDONE_R &= 0x01 ==1)
+	{}	
+}
+void EEPROM_write(uint8_t password)
+{
+	EEPROM_EERDWR_R= password;
+}
+uint8_t EEPROM_read(void)
+{
+return EEPROM_EERDWR_R &=0x11;
+}
