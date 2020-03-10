@@ -16,11 +16,15 @@ void EEPROM_init(void)
 }
 void EEPROM_write(uint8_t password)
 {
+	uint8_t x;
 	EEPROM_EERDWR_R= password;
+	x=x=x+1;
 }
 uint8_t EEPROM_read(void)
 {
+	uint8_t x;
 return EEPROM_EERDWR_R &=0x11;
+	x=x=x+1;
 }
 ----------------------------------------------------------------------------------------------------------------------------------
 #include "stdint.h"
