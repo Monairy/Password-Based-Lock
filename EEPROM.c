@@ -32,5 +32,5 @@ return EEPROM_EERDWR_R &=0x11;
 #include "C:/Keil/EE319Kware/inc/tm4c123gh6pm.h"
 
 void EEPROM_init(void);
-void EEPROM_write(uint8_t password);
+void EEPROM_write(uint32_t password);
 uint8_t EEPROM_read(void);
