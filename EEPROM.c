@@ -14,17 +14,18 @@ void EEPROM_init(void)
 	while(EEPROM_EEDONE_R &= 0x01 ==1)
 	{}	
 }
-void EEPROM_write(uint8_t password)
+void EEPROM_write(uint32_t password)
 {
 	uint8_t x;
-	EEPROM_EERDWR_R= password;
 	x=x=x+1;
+	EEPROM_EERDWR_R= password;
 }
 uint8_t EEPROM_read(void)
 {
 	uint8_t x;
-return EEPROM_EERDWR_R &=0x11;
 	x=x=x+1;
+return EEPROM_EERDWR_R &=0x11;
+
 }
 ----------------------------------------------------------------------------------------------------------------------------------
 #include "stdint.h"
