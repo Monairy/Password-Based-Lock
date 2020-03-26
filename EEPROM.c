@@ -1,36 +1,35 @@
-#include "EEPROM.h"
+#include "eeprom.h"
 
-void SystemInit(){}
+//void SystemInit(){}
 	
+	
+void SystemInit(){}
+
 void EEPROM_init(void)
 {
-	uint8_t x=0;
+	uint8_t i;
+
 	SYSCTL_RCGCEEPROM_R |= 0x01;
-	x=x+1;
-	while(EEPROM_EEDONE_R &= 0x01 ==1)
-	{}
+   for(i = 0;i<6;i=i+1);
+	while((EEPROM_EEDONE_R & 0x01)==1);
 	SYSCTL_SREEPROM_R |=0x01;
-	x=x+1;
-	while(EEPROM_EEDONE_R &= 0x01 ==1)
-	{}	
+	SYSCTL_SREEPROM_R &=0x7E;
+   for(i = 0;i<6;i=i+1);
+   while((EEPROM_EEDONE_R & 0x01)==1);
+		
 }
 void EEPROM_write(uint32_t password)
 {
-	uint8_t x;
-	x=x=x+1;
+	EEPROM_EEBLOCK_R = 0;
+	EEPROM_EEOFFSET_R = 0;
 	EEPROM_EERDWR_R= password;
 }
-uint8_t EEPROM_read(void)
+
+uint32_t  EEPROM_read(void)
 {
-	uint8_t x;
-	x=x=x+1;
-return EEPROM_EERDWR_R &=0x11;
-
+	uint32_t  pass;
+	EEPROM_EEBLOCK_R = 0;
+	EEPROM_EEOFFSET_R = 0;	
+	pass=EEPROM_EERDWR_R;
+  return pass;
 }
-----------------------------------------------------------------------------------------------------------------------------------
-#include "stdint.h"
-#include "C:/Keil/EE319Kware/inc/tm4c123gh6pm.h"
-
-void EEPROM_init(void);
-void EEPROM_write(uint32_t password);
-uint8_t EEPROM_read(void);
