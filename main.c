@@ -3,9 +3,11 @@
 #include "eeprom.h"
 #include "timer.h"
 
-int32_t arrtodecimal(char *arr,uint8_t length);
+uint32_t arrtodecimal(uint32_t *arr,uint8_t length);
 void decimaltoarr (uint32_t *arr,uint32_t decimal);
 int8_t validatepassword(uint32_t *input , uint32_t *rightpass);
+void setnewpassword();
+
 
 void initportf()
 {
@@ -90,16 +92,18 @@ for(;;)
 											timer+=1;
                                }	
 										
-					 if(timer>1 && timer<20 ){					
+					 if(timer>1 && timer<20 ){ //close lock				
 				       LCD_clearScreen();
+						 
 					    	 }		
-					 if(timer>=20 ){			
+					 if(timer>=20 ){	//new pass		
 				       LCD_clearScreen();
 						   LCD_displayString("EnterNewPassword");	
          	     delayMs(500);	
 					     LCD_clearScreen();
-						   
+						   setnewpassword();
 					     }
+	 
               GPIO_PORTF_DATA_R &= ~0x02;	
              i=0;	counter=0; timer=0;							 
 				}
@@ -123,15 +127,17 @@ for(;;)
 }
 
 
-int32_t arrtodecimal(char *arr,uint8_t length)
+uint32_t arrtodecimal(uint32_t *arr,uint8_t length)
 {	
-  int32_t weights[4]={1,10,100,1000};
-	int32_t x,decimal;
+  uint32_t weights[4]={1000,100,10,1};
+	uint32_t x,decimal;
 	decimal=0;
-	for (x=0;x<=length;x++)
-	{decimal+= (arr[x]-'0')*weights[x];}
+	for (x=0;x<length;x++)
+	{decimal+= (arr[x])*weights[x];}
 	return decimal;
 }
+
+
 void decimaltoarr (uint32_t *arr,uint32_t decimal)
 {	
 	uint8_t y;
@@ -151,4 +157,42 @@ int8_t validatepassword(uint32_t *input , uint32_t *rightpass)
 		   return 0;
 	   }
 	return 1;
+}
+
+void setnewpassword()
+{ uint8_t counter=0,z=0,key;
+	uint32_t newpass;
+	uint32_t in2[4];
+	LCD_clearScreen();
+	for(;;){
+	   if(counter<4)
+	 {	
+	   	key = KeyPad_getPressedKey();
+	   	if(key=='#' || key=='*' ){continue;}
+      in2[z]=key;
+      z++;		
+	  	delayMs(500);
+	  	LCD_data(intgerToString(key));
+	  	delayMs(10);
+	  	counter++;
+	}
+	
+	if(counter>=4)
+		{
+			key = KeyPad_getPressedKey();
+		if (key=='#')
+			{
+	     	newpass=arrtodecimal(in2,4);
+				EEPROM_write(newpass);
+				LCD_clearScreen();
+				LCD_displayString("Saved");
+				delayMs(5000);
+				LCD_clearScreen();
+				return;
+		   }
+	
+	
+	}
+	}
+
 }
