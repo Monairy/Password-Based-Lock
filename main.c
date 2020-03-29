@@ -1,6 +1,8 @@
 #include "LCD.h"
 #include "KeyPad.h"
 #include "eeprom.h"
+#include "timer.h"
+
 int32_t arrtodecimal(char *arr,uint8_t length);
 void decimaltoarr (uint32_t *arr,uint32_t decimal);
 int8_t validatepassword(uint32_t *input , uint32_t *rightpass);
@@ -8,30 +10,31 @@ int8_t validatepassword(uint32_t *input , uint32_t *rightpass);
 void initportf()
 {
 	uint32_t delay;
-	SYSCTL_RCGCGPIO_R |= 0x20;
+	SYSCTL_RCGC2_R |= 0x20;
 	delay=0; //dummy var
 	GPIO_PORTF_LOCK_R=0x4C4F434B;
 	GPIO_PORTF_CR_R=0XFF;
 	GPIO_PORTF_AFSEL_R=0;
 	GPIO_PORTF_PCTL_R=0;
 	GPIO_PORTF_AMSEL_R=0;
-	GPIO_PORTF_DIR_R=0X02;
-	GPIO_PORTF_DEN_R=0X02;
-	GPIO_PORTF_PUR_R=0X00;
-	GPIO_PORTF_DATA_R = 0x0;  		
+	GPIO_PORTF_DIR_R |= 0X02;
+	GPIO_PORTF_DIR_R &= ~0X01;
+	GPIO_PORTF_DEN_R |= 0X03;
+	GPIO_PORTF_PUR_R |= 0X01;
+	GPIO_PORTF_DATA_R = 0x00;  		
 }
 
 int main(void)
 { volatile int8_t check;
 	uint32_t in[4];
 	uint32_t savedpassarr[4];
-	uint8_t key,counter=0,i =0,y=0;
+	uint8_t key,counter=0,i =0,y=0,timer=0;
 	
 	initportf();
   LCD_init();
 	EEPROM_init();
 	EEPROM_write(9999);
-  //password=arrtodecimal(arrr,4);
+	
 	/*/LCD_command(2);
 	
 	//delayMs(10);
@@ -56,21 +59,64 @@ int main(void)
 for(;;)
 {	decimaltoarr(savedpassarr,EEPROM_read());
 		 
-
 	if(counter<4)
 	{
-		counter++;
 		key = KeyPad_getPressedKey();
+		if(key=='#' || key=='*' ){continue;}
     in[i]=key;
     i++;		
 		delayMs(500);
 		LCD_data(intgerToString(key));
 		delayMs(10);
+		counter++;
 	}
   if(counter>=4)
 	{	 	 
-		 check=validatepassword(in,savedpassarr);
-     	GPIO_PORTF_DATA_R  |= 0x02;	
+		key = KeyPad_getPressedKey();
+		if(key=='#')
+			{
+		    check=validatepassword(in,savedpassarr);
+		    if(check==1){ //correct password
+					GPIO_PORTF_DATA_R |= 0x02;
+					LCD_clearScreen(); 
+					LCD_displayString("Correct Password");	
+         	delayMs(500);	
+	
+						 while( GPIO_PORTF_DATA_R & (0x01) ){} //not pressed
+									 
+						 while(!(GPIO_PORTF_DATA_R & (0x01) ))//pressed
+                    {
+											sysTick_delayMs(250);
+											timer+=1;
+                               }	
+										
+					 if(timer>1 && timer<20 ){					
+				       LCD_clearScreen();
+					    	 }		
+					 if(timer>=20 ){			
+				       LCD_clearScreen();
+						   LCD_displayString("EnterNewPassword");	
+         	     delayMs(500);	
+					     LCD_clearScreen();
+						   
+					     }
+              GPIO_PORTF_DATA_R &= ~0x02;	
+             i=0;	counter=0; timer=0;							 
+				}
+				
+				
+				
+				else{
+				counter=0;
+				LCD_clearScreen();
+				LCD_displayString("Wrong Password");
+				delayMs(5000);	
+        LCD_clearScreen();
+				i=0;
+				}
+		  }
+    
+		
    }   
 
 }
