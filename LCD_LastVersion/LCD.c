@@ -106,6 +106,7 @@ void LCD_displayString(const char *Str)
 		LCD_data(Str[i]);
 		i++;
 	}
+	LCD_command(0xC0);
 }
 
 
@@ -119,4 +120,6 @@ void LCD_clearScreen(void)
 {
 	LCD_command(0x01); //clear display
 }
+
+
 
