@@ -33,11 +33,9 @@ int main(void)
 	uint8_t key,counter=0,i =0,y=0,timer=0;
 	
 	initportf();
-  LCD_init();
-	EEPROM_init();
-	EEPROM_write(9999);
+  
+	EEPROM_init();	
 	
-	/*/LCD_command(2);
 	
 	//delayMs(10);
 	//LCD_command(1); //clear display
@@ -57,10 +55,15 @@ int main(void)
 	*/
 	KeyPad_init();
 	delayMs(500);
-		 
+		 LCD_init();
 for(;;)
-{	decimaltoarr(savedpassarr,EEPROM_read());
-		 
+{	
+  if(counter==0){	
+	decimaltoarr(savedpassarr,EEPROM_read());
+	LCD_clearScreen(); 
+	LCD_displayString("Enter Password:");
+	}
+	
 	if(counter<4)
 	{
 		key = KeyPad_getPressedKey();
@@ -78,42 +81,41 @@ for(;;)
 		if(key=='#')
 			{
 		    check=validatepassword(in,savedpassarr);
-		    if(check==1){ //correct password
-					GPIO_PORTF_DATA_R |= 0x02;
+///////////correct password//////////////		
+		    if(check==1){
+					GPIO_PORTF_DATA_R |= 0x02; //led ON
 					LCD_clearScreen(); 
-					LCD_displayString("Correct Password");	
+					LCD_displayString("Correct Password!");	
          	delayMs(500);	
-	
+    //get command to reset pass or lock door
 						 while( GPIO_PORTF_DATA_R & (0x01) ){} //not pressed
 									 
 						 while(!(GPIO_PORTF_DATA_R & (0x01) ))//pressed
-                    {
+                                  {
 											sysTick_delayMs(250);
 											timer+=1;
-                               }	
+                                     }	
 										
-					 if(timer>1 && timer<20 ){ //close lock				
+					 if(timer>=1 && timer<20 ){ //close lock				
 				       LCD_clearScreen();
 						 
 					    	 }		
-					 if(timer>=20 ){	//new pass		
+					 if(timer>=20 ){	//new password	
 				       LCD_clearScreen();
 						   LCD_displayString("EnterNewPassword");	
          	     delayMs(500);	
-					     LCD_clearScreen();
 						   setnewpassword();
 					     }
 	 
-              GPIO_PORTF_DATA_R &= ~0x02;	
+              GPIO_PORTF_DATA_R &= ~0x02;	//turn of led and return to state 0
              i=0;	counter=0; timer=0;							 
 				}
 				
-				
-				
-				else{
+//////////////wrong password////////////						
+				else{ 
 				counter=0;
 				LCD_clearScreen();
-				LCD_displayString("Wrong Password");
+				LCD_displayString("Wrong Password!");
 				delayMs(5000);	
         LCD_clearScreen();
 				i=0;
@@ -129,11 +131,14 @@ for(;;)
 
 uint32_t arrtodecimal(uint32_t *arr,uint8_t length)
 {	
-  uint32_t weights[4]={1000,100,10,1};
+    uint32_t weights[4]={1000,100,10,1};
 	uint32_t x,decimal;
 	decimal=0;
+	
 	for (x=0;x<length;x++)
-	{decimal+= (arr[x])*weights[x];}
+	{
+		decimal+= (arr[x])*weights[x];
+		}
 	return decimal;
 }
 
@@ -141,6 +146,7 @@ uint32_t arrtodecimal(uint32_t *arr,uint8_t length)
 void decimaltoarr (uint32_t *arr,uint32_t decimal)
 {	
 	uint8_t y;
+	
 	for (y=0;y<4;y++)
 	{
 	arr[3-y]=decimal%10;
@@ -160,17 +166,17 @@ int8_t validatepassword(uint32_t *input , uint32_t *rightpass)
 }
 
 void setnewpassword()
-{ uint8_t counter=0,z=0,key;
+{   uint8_t counter=0,z=0,key;
 	uint32_t newpass;
 	uint32_t in2[4];
-	LCD_clearScreen();
+	
 	for(;;){
 	   if(counter<4)
 	 {	
 	   	key = KeyPad_getPressedKey();
 	   	if(key=='#' || key=='*' ){continue;}
-      in2[z]=key;
-      z++;		
+         in2[z]=key;
+        z++;		
 	  	delayMs(500);
 	  	LCD_data(intgerToString(key));
 	  	delayMs(10);
@@ -185,8 +191,8 @@ void setnewpassword()
 	     	newpass=arrtodecimal(in2,4);
 				EEPROM_write(newpass);
 				LCD_clearScreen();
-				LCD_displayString("Saved");
-				delayMs(5000);
+				LCD_displayString("Saved!");
+				delayMs(3000);
 				LCD_clearScreen();
 				return;
 		   }
@@ -196,3 +202,15 @@ void setnewpassword()
 	}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
